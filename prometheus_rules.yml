@@ -1,0 +1,37 @@
+groups:
+  - name: pedido-service-alerts
+    rules:
+      - alert: HighLatencyPedidos
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri="/pedidos"}[5m])) by (le)) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "P95 latency > 1s on /pedidos"
+          description: "95th percentile latency > 1s for /pedidos"
+
+      - alert: High5xxRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "5xx rate > 5%"
+          description: "More than 5% of requests returned 5xx in last 5m"
+
+      - alert: DropInOrderCreation
+        expr: |
+          (sum(rate(pedidos_criados_total[5m])) < (sum(rate(pedidos_criados_total[1h])) / 12 * 0.3))
+          and (sum(rate(pedidos_criados_total[1h])) > 0)
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Drop in order creation"
+          description: "Orders in last 5m dropped significantly vs hourly average"
