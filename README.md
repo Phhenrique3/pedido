@@ -29,6 +29,8 @@ Micrometer (Prometheus)
 
 SLF4J/Logback para logs
 
+Para rodar aplicação é mvn spring-boot:run 
+
 Maven
 
 🔹 Endpoints
